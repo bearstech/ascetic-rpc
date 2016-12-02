@@ -1,13 +1,13 @@
 package mux
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/bearstech/ascetic-rpc/model"
 	"github.com/bearstech/ascetic-rpc/protocol"
+	"github.com/bearstech/ascetic-rpc/wire"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -17,35 +17,15 @@ func (p ping) Handle(*model.Request, []byte) (model.Response, proto.Message) {
 	return model.Response{Code: 1}, nil
 }
 
-type mockClient struct {
-	in  *bytes.Buffer
-	out *bytes.Buffer
-}
-
-func (m *mockClient) Read(p []byte) (n int, err error) {
-	return m.in.Read(p)
-}
-
-func (m *mockClient) Write(p []byte) (n int, err error) {
-	return m.out.Write(p)
-}
-
-func newMockClient() *mockClient {
-	return &mockClient{
-		in:  new(bytes.Buffer),
-		out: new(bytes.Buffer),
-	}
-}
-
 func TestPing(t *testing.T) {
-	wire := newMockClient()
-	s := NewServer(wire)
+	w := wire.New()
+	s := NewServer(w.ServerToClient())
 	s.Route("ping", ping{})
 
 	req := model.Request{
 		Name: "ping",
 	}
-	err := protocol.WriteHeaderAndBody(wire.in, &req, nil)
+	err := protocol.WriteHeaderAndBody(w.ClientToServer(), &req, nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -55,7 +35,7 @@ func TestPing(t *testing.T) {
 	}
 
 	var resp model.Response
-	err = protocol.Read(wire.out, &resp)
+	err = protocol.Read(w.ClientToServer(), &resp)
 	if err != nil {
 		t.Error(err)
 	}
@@ -79,14 +59,14 @@ func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto
 }
 
 func TestHello(t *testing.T) {
-	wire := newMockClient()
-	s := NewServer(wire)
+	w := wire.New()
+	s := NewServer(w.ServerToClient())
 	s.Route("hello", hello{})
 	req := model.Request{
 		Name: "hello",
 	}
 	hello := model.Hello{Name: "Bob"}
-	err := protocol.WriteHeaderAndBody(wire.in, &req, &hello)
+	err := protocol.WriteHeaderAndBody(w.ClientToServer(), &req, &hello)
 	if err != nil {
 		t.Error(err)
 	}
@@ -96,12 +76,16 @@ func TestHello(t *testing.T) {
 	}
 
 	var resp model.Response
-	err = protocol.Read(wire.out, &resp)
+	err = protocol.Read(w.ClientToServer(), &resp)
 	if err != nil {
 		t.Error(err)
 	}
+	if resp.Code < 0 {
+		t.Error(errors.New("It's an error"))
+	}
+
 	var world model.World
-	err = protocol.Read(wire.out, &world)
+	err = protocol.Read(w.ClientToServer(), &world)
 	if err != nil {
 		t.Error(err)
 	}
