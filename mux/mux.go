@@ -11,24 +11,20 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type Handler interface {
-	Handle(req_h *model.Request, req_b []byte) (model.Response, proto.Message)
-}
-
 type server struct {
 	socket   *net.UnixListener
-	handlers map[string]Handler
+	handlers map[string]func(req_h *model.Request, req_b []byte) (model.Response, proto.Message)
 }
 
 func NewServer(socket *net.UnixListener) *server {
 	return &server{
 		socket:   socket,
-		handlers: make(map[string]Handler),
+		handlers: make(map[string]func(req_h *model.Request, req_b []byte) (model.Response, proto.Message)),
 	}
 }
 
-func (s *server) Route(name string, handler Handler) {
-	s.handlers[name] = handler
+func (s *server) Route(name string, fun func(req_h *model.Request, req_b []byte) (model.Response, proto.Message)) {
+	s.handlers[name] = fun
 }
 
 func (s *server) Listen() {
@@ -59,7 +55,7 @@ func (s *server) Read(wire io.ReadWriter) error {
 	if err != nil {
 		return err
 	}
-	res_h, res_b := h.Handle(&req_h, req_b)
+	res_h, res_b := h(&req_h, req_b)
 	err = protocol.WriteHeaderAndBody(wire, &res_h, res_b)
 	if err != nil {
 		return err

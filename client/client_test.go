@@ -12,9 +12,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type hello struct{}
-
-func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto.Message) {
+func hello(req_h *model.Request, req_b []byte) (model.Response, proto.Message) {
 	var hello model.Hello
 	err := proto.Unmarshal(req_b, &hello)
 	if err != nil {
@@ -25,6 +23,7 @@ func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto
 	}
 	return model.Response{Code: 1}, &world
 }
+
 func TestClientHello(t *testing.T) {
 	socketPath := "/tmp/test_client.sock"
 	os.Remove(socketPath)
@@ -38,7 +37,7 @@ func TestClientHello(t *testing.T) {
 	}
 
 	s := mux.NewServer(l)
-	s.Route("hello", hello{})
+	s.Route("hello", hello)
 	go s.Listen()
 
 	conn, err := net.DialUnix("unix", nil, &net.UnixAddr{

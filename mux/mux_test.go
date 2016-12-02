@@ -11,16 +11,14 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type ping struct{}
-
-func (p ping) Handle(*model.Request, []byte) (model.Response, proto.Message) {
+func ping(*model.Request, []byte) (model.Response, proto.Message) {
 	return model.Response{Code: 1}, nil
 }
 
 func TestPing(t *testing.T) {
 	w := wire.New()
 	s := NewServer(nil)
-	s.Route("ping", ping{})
+	s.Route("ping", ping)
 
 	req := model.Request{
 		Name: "ping",
@@ -44,9 +42,7 @@ func TestPing(t *testing.T) {
 	}
 }
 
-type hello struct{}
-
-func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto.Message) {
+func hello(req_h *model.Request, req_b []byte) (model.Response, proto.Message) {
 	var hello model.Hello
 	err := proto.Unmarshal(req_b, &hello)
 	if err != nil {
@@ -61,7 +57,7 @@ func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto
 func TestHello(t *testing.T) {
 	w := wire.New()
 	s := NewServer(nil)
-	s.Route("hello", hello{})
+	s.Route("hello", hello)
 	req := model.Request{
 		Name: "hello",
 	}
