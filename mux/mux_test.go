@@ -77,7 +77,7 @@ func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto
 		panic(err)
 	}
 	world := model.World{
-		Message: fmt.Sprintf("Hello %s!", hello.Name),
+		Message: fmt.Sprintf("Hello %s♥️", hello.Name),
 	}
 	return model.Response{Code: 1}, &world
 }
@@ -113,7 +113,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if world.Message != "Hello Bob!" {
-		t.Error(errors.New("Bad message"))
+	if world.Message != "Hello Bob♥️" {
+		t.Error(errors.New("Bad message: " + world.Message))
 	}
 }
