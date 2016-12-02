@@ -45,11 +45,7 @@ func TestPing(t *testing.T) {
 	req := model.Request{
 		Name: "ping",
 	}
-	err := protocol.Write(wire.in, &req)
-	if err != nil {
-		t.Error(err)
-	}
-	err = protocol.Write(wire.in, nil)
+	err := protocol.WriteHeaderAndBody(wire.in, &req, nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -89,12 +85,8 @@ func TestHello(t *testing.T) {
 	req := model.Request{
 		Name: "hello",
 	}
-	err := protocol.Write(wire.in, &req)
-	if err != nil {
-		t.Error(err)
-	}
 	hello := model.Hello{Name: "Bob"}
-	err = protocol.Write(wire.in, &hello)
+	err := protocol.WriteHeaderAndBody(wire.in, &req, &hello)
 	if err != nil {
 		t.Error(err)
 	}

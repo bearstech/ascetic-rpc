@@ -46,11 +46,7 @@ func (s *server) Read() error {
 		return err
 	}
 	res_h, res_b := h.Handle(&req_h, req_b)
-	err = protocol.Write(s.wire, &res_h)
-	if err != nil {
-		return err
-	}
-	err = protocol.Write(s.wire, res_b)
+	err = protocol.WriteHeaderAndBody(s.wire, &res_h, res_b)
 	if err != nil {
 		return err
 	}
