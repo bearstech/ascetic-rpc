@@ -2,6 +2,8 @@ package mux
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/bearstech/ascetic-rpc/model"
@@ -63,5 +65,55 @@ func TestPing(t *testing.T) {
 	}
 	if resp.Code != 1 {
 		t.Fatal()
+	}
+}
+
+type hello struct{}
+
+func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto.Message) {
+	var hello model.Hello
+	err := proto.Unmarshal(req_b, &hello)
+	if err != nil {
+		panic(err)
+	}
+	world := model.World{
+		Message: fmt.Sprintf("Hello %s!", hello.Name),
+	}
+	return model.Response{Code: 1}, &world
+}
+
+func TestHello(t *testing.T) {
+	wire := newMockClient()
+	s := NewServer(wire)
+	s.Route("hello", hello{})
+	req := model.Request{
+		Name: "hello",
+	}
+	err := protocol.Write(wire.in, &req)
+	if err != nil {
+		t.Error(err)
+	}
+	hello := model.Hello{Name: "Bob"}
+	err = protocol.Write(wire.in, &hello)
+	if err != nil {
+		t.Error(err)
+	}
+	err = s.Read()
+	if err != nil {
+		t.Error(err)
+	}
+
+	var resp model.Response
+	err = protocol.Read(wire.out, &resp)
+	if err != nil {
+		t.Error(err)
+	}
+	var world model.World
+	err = protocol.Read(wire.out, &world)
+	if err != nil {
+		t.Error(err)
+	}
+	if world.Message != "Hello Bob!" {
+		t.Error(errors.New("Bad message"))
 	}
 }

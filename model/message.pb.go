@@ -7,10 +7,13 @@ Package model is a generated protocol buffer package.
 
 It is generated from these files:
 	model/message.proto
+	model/test.proto
 
 It has these top-level messages:
 	Request
 	Response
+	Hello
+	World
 */
 package model
 

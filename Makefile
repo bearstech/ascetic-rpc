@@ -9,7 +9,7 @@ protoc:
 	protoc --go_out=. model/*.proto
 
 test:
-	go test github.com/bearstech/ascetic-rpc/mux
+	go test -v github.com/bearstech/ascetic-rpc/mux
 
 
 # Kitchen sinks
