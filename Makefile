@@ -11,6 +11,7 @@ protoc:
 test:
 	go test -v github.com/bearstech/ascetic-rpc/mux
 	go test -v github.com/bearstech/ascetic-rpc/protocol
+	go test -v github.com/bearstech/ascetic-rpc/client
 
 
 # Kitchen sinks

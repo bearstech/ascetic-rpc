@@ -19,7 +19,7 @@ func (p ping) Handle(*model.Request, []byte) (model.Response, proto.Message) {
 
 func TestPing(t *testing.T) {
 	w := wire.New()
-	s := NewServer(w.ServerToClient())
+	s := NewServer(nil)
 	s.Route("ping", ping{})
 
 	req := model.Request{
@@ -29,7 +29,7 @@ func TestPing(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = s.Read()
+	err = s.Read(w.ServerToClient())
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,7 +60,7 @@ func (h hello) Handle(req_h *model.Request, req_b []byte) (model.Response, proto
 
 func TestHello(t *testing.T) {
 	w := wire.New()
-	s := NewServer(w.ServerToClient())
+	s := NewServer(nil)
 	s.Route("hello", hello{})
 	req := model.Request{
 		Name: "hello",
@@ -70,7 +70,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = s.Read()
+	err = s.Read(w.ServerToClient())
 	if err != nil {
 		t.Error(err)
 	}

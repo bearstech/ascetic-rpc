@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 
 	"github.com/bearstech/ascetic-rpc/model"
 	"github.com/bearstech/ascetic-rpc/protocol"
@@ -15,13 +16,13 @@ type Handler interface {
 }
 
 type server struct {
-	wire     io.ReadWriter
+	socket   *net.UnixListener
 	handlers map[string]Handler
 }
 
-func NewServer(wire io.ReadWriter) *server {
+func NewServer(socket *net.UnixListener) *server {
 	return &server{
-		wire:     wire,
+		socket:   socket,
 		handlers: make(map[string]Handler),
 	}
 }
@@ -30,9 +31,22 @@ func (s *server) Route(name string, handler Handler) {
 	s.handlers[name] = handler
 }
 
-func (s *server) Read() error {
+func (s *server) Listen() {
+	for {
+		conn, err := s.socket.AcceptUnix()
+		if err != nil {
+			panic(err)
+		}
+		err = s.Read(conn)
+		if err != nil {
+			// Do something
+		}
+	}
+}
+
+func (s *server) Read(wire io.ReadWriter) error {
 	var req_h model.Request
-	err := protocol.Read(s.wire, &req_h)
+	err := protocol.Read(wire, &req_h)
 	if err != nil {
 		return err
 	}
@@ -41,12 +55,12 @@ func (s *server) Read() error {
 	if !ok {
 		return errors.New("Not found")
 	}
-	req_b, err := protocol.ReadBytes(s.wire)
+	req_b, err := protocol.ReadBytes(wire)
 	if err != nil {
 		return err
 	}
 	res_h, res_b := h.Handle(&req_h, req_b)
-	err = protocol.WriteHeaderAndBody(s.wire, &res_h, res_b)
+	err = protocol.WriteHeaderAndBody(wire, &res_h, res_b)
 	if err != nil {
 		return err
 	}
