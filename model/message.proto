@@ -1,0 +1,13 @@
+syntax = "proto3";
+package model;
+
+message Request {
+    string Name      = 1; // mandatory
+    string Signature = 2;
+}
+
+message Response {
+    int32 Code       = 1; // mandatory
+    string Signature = 2;
+    string Message   = 3;
+}
