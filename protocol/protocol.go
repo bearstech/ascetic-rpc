@@ -48,6 +48,9 @@ func ReadBytes(wire io.Reader) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if size == 0 {
+		return []byte{}, nil
+	}
 	buf := make([]byte, size)
 	s, err := io.ReadFull(wire, buf)
 	if err != nil {
@@ -64,9 +67,11 @@ func Read(wire io.Reader, msg proto.Message) error {
 	if err != nil {
 		return err
 	}
-	err = proto.Unmarshal(buf, msg)
-	if err != nil {
-		return err
+	if msg == nil {
+		if len(buf) != 0 {
+			return errors.New("Nil message should be empty")
+		}
+		return nil
 	}
-	return nil
+	return proto.Unmarshal(buf, msg)
 }
