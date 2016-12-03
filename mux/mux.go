@@ -1,7 +1,6 @@
 package mux
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -44,12 +43,38 @@ func (s *server) Read(wire io.ReadWriter) error {
 	var req_h model.Request
 	err := protocol.Read(wire, &req_h)
 	if err != nil {
+		s.socket.Close()
 		return err
 	}
-	fmt.Println(req_h)
+	fmt.Println("header:", req_h)
+	if req_h.Name == "" {
+		err2 := protocol.Read(wire, nil)
+		if err2 != nil {
+			// oups
+			fmt.Println(err2)
+		}
+		res_h := model.Response{
+			Code:    -1,
+			Message: "Empty method"}
+		err2 = protocol.WriteHeaderAndBody(wire, &res_h, nil)
+		if err2 != nil {
+			// oups
+			fmt.Println(err2)
+		}
+		return nil
+	}
 	h, ok := s.handlers[req_h.Name]
 	if !ok {
-		return errors.New("Not found")
+		err2 := protocol.Read(wire, nil) // Drain body
+		res_h := model.Response{
+			Code:    -1,
+			Message: "Unknown method: " + req_h.Name}
+		err2 = protocol.WriteHeaderAndBody(wire, &res_h, nil)
+		if err2 != nil {
+			// oups
+			fmt.Println(err2)
+		}
+		return nil
 	}
 	req_b, err := protocol.ReadBytes(wire)
 	if err != nil {

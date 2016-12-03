@@ -58,11 +58,44 @@ func TestHello(t *testing.T) {
 	w := wire.New()
 	s := NewServer(nil)
 	s.Route("hello", hello)
+
+	var err error
 	req := model.Request{
+		Name: "plop",
+	}
+	err = protocol.WriteHeaderAndBody(w.ClientToServer(), &req, nil)
+	err = s.Read(w.ServerToClient())
+	if err != nil {
+		t.Error(err)
+	}
+	var resp model.Response
+	err = protocol.Read(w.ClientToServer(), &resp)
+	if err != nil {
+		t.Error(err)
+	}
+	if resp.Code != -1 {
+		t.Error(errors.New("It should be unknown"))
+	}
+	fmt.Println(w.Len())
+	err = protocol.Read(w.ClientToServer(), nil)
+	if err != nil {
+		t.Error(err)
+	}
+	lin, lout := w.Len()
+	fmt.Println("Wire len: ", lin, lout)
+	if lin != 0 {
+		t.Error(errors.New("bad size"))
+	}
+	if lout != 0 {
+		t.Error(errors.New("bad size"))
+	}
+
+	req2 := model.Request{
 		Name: "hello",
 	}
 	hello := model.Hello{Name: "Bob"}
-	err := protocol.WriteHeaderAndBody(w.ClientToServer(), &req, &hello)
+	fmt.Println("deuz: ", req2)
+	err = protocol.WriteHeaderAndBody(w.ClientToServer(), &req2, &hello)
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,13 +104,13 @@ func TestHello(t *testing.T) {
 		t.Error(err)
 	}
 
-	var resp model.Response
+	resp.Reset()
 	err = protocol.Read(w.ClientToServer(), &resp)
 	if err != nil {
 		t.Error(err)
 	}
 	if resp.Code < 0 {
-		t.Error(errors.New("It's an error"))
+		t.Error(errors.New("It's an error: " + resp.Message))
 	}
 
 	var world model.World
