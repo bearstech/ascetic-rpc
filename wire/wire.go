@@ -37,3 +37,7 @@ func (m *mockWire) ClientToServer() io.ReadWriter {
 func (m *mockWire) ServerToClient() io.ReadWriter {
 	return &wire{m.out, m.in}
 }
+
+func (m *mockWire) Len() (int, int) {
+	return m.in.Len(), m.out.Len()
+}
