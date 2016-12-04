@@ -34,14 +34,6 @@ func Write(wire io.Writer, msg proto.Message) error {
 	return nil
 }
 
-func WriteHeaderAndBody(wire io.Writer, header proto.Message, body proto.Message) error {
-	err := Write(wire, header)
-	if err != nil {
-		return err
-	}
-	return Write(wire, body)
-}
-
 func ReadBytes(wire io.Reader) ([]byte, error) {
 	var size uint16
 	err := binary.Read(wire, binary.LittleEndian, &size)

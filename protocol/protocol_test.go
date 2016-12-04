@@ -3,9 +3,8 @@ package protocol
 import (
 	"bytes"
 	"errors"
-	"testing"
-
 	"github.com/bearstech/ascetic-rpc/model"
+	"testing"
 )
 
 func TestProtocol(t *testing.T) {
@@ -13,10 +12,10 @@ func TestProtocol(t *testing.T) {
 	req := model.Request{
 		Name: "plop",
 	}
-	hello := model.Hello{
+	req.SetBody(&model.Hello{
 		Name: "Charles",
-	}
-	err := WriteHeaderAndBody(wire, &req, &hello)
+	})
+	err := Write(wire, &req)
 	if err != nil {
 		t.Error(err)
 	}
@@ -30,7 +29,7 @@ func TestProtocol(t *testing.T) {
 	if r.Name != "plop" {
 		t.Error(errors.New("Bad name"))
 	}
-	err = Read(wire, &h)
+	err = r.GetBody(&h)
 	if err != nil {
 		t.Error(err)
 	}
