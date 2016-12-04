@@ -5,23 +5,28 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/bearstech/ascetic-rpc/model"
 	"github.com/bearstech/ascetic-rpc/mux"
-	"github.com/golang/protobuf/proto"
 )
 
-func hello(req_h *model.Request, req_b []byte) (model.Response, proto.Message) {
+func hello(req *model.Request) *model.Response {
 	var hello model.Hello
-	err := proto.Unmarshal(req_b, &hello)
+	err := req.GetBody(&hello)
 	if err != nil {
 		panic(err)
 	}
 	world := model.World{
 		Message: fmt.Sprintf("Hello %s🐈", hello.Name),
 	}
-	return model.Response{Code: 1}, &world
+	resp, err := model.NewOK(1, &world)
+	if err != nil {
+		return model.NewError(-2, err.Error())
+	}
+	fmt.Println("Response: ", resp)
+	return resp
 }
 
 func TestClientHello(t *testing.T) {
@@ -48,6 +53,12 @@ func TestClientHello(t *testing.T) {
 	}
 	c := New(conn)
 
+	// Unknown function
+	err = c.Do("oups", nil, nil)
+	if !strings.HasPrefix(err.Error(), "Unknown method") {
+		t.Error(errors.New("Wrong error: " + err.Error()))
+	}
+
 	hello := model.Hello{Name: "Alice"}
 	var world model.World
 
@@ -55,8 +66,8 @@ func TestClientHello(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 	if world.Message != "Hello Alice🐈" {
 		t.Error(errors.New("Bad message: " + world.Message))
 	}
+
 }

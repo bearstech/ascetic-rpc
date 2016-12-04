@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 	"io"
 
@@ -20,24 +19,25 @@ func New(wire io.ReadWriter) *client {
 	}
 }
 
-func (c *client) Do(fun string, arg proto.Message, resp proto.Message) error {
+func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
 	req := model.Request{
 		Name: fun,
 	}
-	err := protocol.WriteHeaderAndBody(c.wire, &req, arg)
+	req.SetBody(arg)
+	err := protocol.Write(c.wire, &req)
 	if err != nil {
 		fmt.Println("Error while writing request", err)
 		return err
 	}
 
-	var resp_h model.Response
-	err = protocol.Read(c.wire, &resp_h)
+	var resp model.Response
+	err = protocol.Read(c.wire, &resp)
 	if err != nil {
 		fmt.Println("Error while reading response", err)
 		return err
 	}
-	if resp_h.Code < 0 { // it's an error
-		return errors.New(resp_h.Message)
+	if resp.Code < 0 { // it's an error
+		return resp.GetErrorError()
 	}
-	return protocol.Read(c.wire, resp)
+	return resp.ReadOK(r)
 }
