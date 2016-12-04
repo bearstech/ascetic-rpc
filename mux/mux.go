@@ -36,7 +36,9 @@ func (s *server) Listen() {
 				err := s.Read(conn)
 				if err != nil {
 					// Do something
-					panic(err)
+					s.socket.Close()
+					fmt.Println(err.Error())
+					return
 				}
 			}
 		}()
@@ -47,31 +49,15 @@ func (s *server) Read(wire io.ReadWriter) error {
 	var req model.Request
 	err := protocol.Read(wire, &req)
 	if err != nil {
-		s.socket.Close()
 		return err
 	}
 	fmt.Println("header:", req)
 	if req.Name == "" {
-		err2 := protocol.Write(wire, model.NewError(-1, "Empty method"))
-		if err2 != nil {
-			// oups
-			fmt.Println(err2)
-		}
-		return nil
+		return protocol.Write(wire, model.NewError(-1, "Empty method"))
 	}
 	h, ok := s.handlers[req.Name]
 	if !ok {
-		err2 := protocol.Write(wire, model.NewError(-1, "Unknown method: "+req.Name))
-		if err2 != nil {
-			// oups
-			fmt.Println(err2)
-		}
-		return nil
+		return protocol.Write(wire, model.NewError(-1, "Unknown method: "+req.Name))
 	}
-	res := h(&req)
-	err = protocol.Write(wire, res)
-	if err != nil {
-		return err
-	}
-	return nil
+	return protocol.Write(wire, h(&req))
 }
