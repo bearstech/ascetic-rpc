@@ -4,10 +4,18 @@ package model;
 message Request {
     string Name      = 1; // mandatory
     string Signature = 2;
+    bytes  RawBody      = 3;
 }
 
 message Response {
-    int32 Code       = 1; // mandatory
+    int32  Code      = 1; // mandatory
     string Signature = 2;
-    string Message   = 3;
+    oneof Body {
+        Error Error  = 3;
+        bytes RawOK     = 4;
+    }
+}
+
+message Error {
+    string Message   = 1;
 }
