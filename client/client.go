@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/bearstech/ascetic-rpc/model"
@@ -23,17 +22,18 @@ func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
 	req := model.Request{
 		Name: fun,
 	}
-	req.SetBody(arg)
-	err := protocol.Write(c.wire, &req)
+	err := req.SetBody(arg)
 	if err != nil {
-		fmt.Println("Error while writing request", err)
+		return err
+	}
+	err = protocol.Write(c.wire, &req)
+	if err != nil {
 		return err
 	}
 
 	var resp model.Response
 	err = protocol.Read(c.wire, &resp)
 	if err != nil {
-		fmt.Println("Error while reading response", err)
 		return err
 	}
 	if resp.Code < 0 { // it's an error
