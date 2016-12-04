@@ -9,6 +9,10 @@ import (
 // Request
 
 func (r *Request) SetBody(body proto.Message) error {
+	if body == nil {
+		r.RawBody = []byte{}
+		return nil
+	}
 	blob, err := proto.Marshal(body)
 	if err != nil {
 		return err
@@ -35,9 +39,15 @@ func NewRequest(name string, body proto.Message) (*Request, error) {
 // Response
 
 func (r *Response) SetOK(body proto.Message) error {
-	blob, err := proto.Marshal(body)
-	if err != nil {
-		return err
+	var blob []byte
+	var err error
+	if body != nil {
+		blob, err = proto.Marshal(body)
+		if err != nil {
+			return err
+		}
+	} else {
+		blob = []byte{}
 	}
 	r.Body = &Response_RawOK{RawOK: blob}
 	return nil
