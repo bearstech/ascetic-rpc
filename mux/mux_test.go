@@ -22,7 +22,7 @@ func TestPing(t *testing.T) {
 	req := model.Request{
 		Name: "ping",
 	}
-	err := protocol.WriteHeaderAndBody(w.ClientToServer(), &req, nil)
+	err := protocol.Write(w.ClientToServer(), &req)
 	if err != nil {
 		t.Error(err)
 	}
@@ -91,6 +91,10 @@ func TestHello(t *testing.T) {
 		t.Error(err)
 	}
 
+	err = s.Read(w.ServerToClient())
+	if err != nil {
+		t.Error(err)
+	}
 	err = protocol.Read(w.ClientToServer(), &resp)
 	if err != nil {
 		t.Error(err)
@@ -100,7 +104,7 @@ func TestHello(t *testing.T) {
 	}
 
 	var world model.World
-	err = protocol.Read(w.ClientToServer(), &world)
+	err = resp.ReadOK(&world)
 	if err != nil {
 		t.Error(err)
 	}
