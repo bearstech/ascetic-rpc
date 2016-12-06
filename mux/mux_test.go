@@ -17,7 +17,7 @@ func ping(*model.Request) *model.Response {
 func TestPing(t *testing.T) {
 	w := wire.New()
 	s := NewServer(nil)
-	s.Route("ping", ping)
+	s.Register("ping", ping)
 
 	req := model.Request{
 		Name: "ping",
@@ -50,9 +50,9 @@ func hello(req *model.Request) *model.Response {
 	world := model.World{
 		Message: fmt.Sprintf("Hello %s♥️", hello.Name),
 	}
-	res, err := model.NewOK(1, &world)
+	res, err := model.NewOKResponse(1, &world)
 	if err != nil {
-		return model.NewError(-2, err.Error())
+		return model.NewErrorResponse(-2, err.Error())
 	}
 	return res
 }
@@ -60,7 +60,7 @@ func hello(req *model.Request) *model.Response {
 func TestHello(t *testing.T) {
 	w := wire.New()
 	s := NewServer(nil)
-	s.Route("hello", hello)
+	s.Register("hello", hello)
 
 	var err error
 	req := model.Request{

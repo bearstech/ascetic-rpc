@@ -61,7 +61,7 @@ func (r *Response) SetError(e *Error) {
 	r.Body = &Response_Error{Error: e}
 }
 
-func NewError(code int32, message string) *Response {
+func NewErrorResponse(code int32, message string) *Response {
 	return &Response{
 		Code: code,
 		Body: &Response_Error{
@@ -72,7 +72,7 @@ func NewError(code int32, message string) *Response {
 	}
 }
 
-func NewOK(code int32, body proto.Message) (*Response, error) {
+func NewOKResponse(code int32, body proto.Message) (*Response, error) {
 	r := &Response{Code: code}
 	err := r.SetOK(body)
 	if err != nil {

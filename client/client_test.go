@@ -21,9 +21,9 @@ func hello(req *model.Request) *model.Response {
 	world := model.World{
 		Message: fmt.Sprintf("Hello %s🐈", hello.Name),
 	}
-	resp, err := model.NewOK(1, &world)
+	resp, err := model.NewOKResponse(1, &world)
 	if err != nil {
-		return model.NewError(-2, err.Error())
+		return model.NewErrorResponse(-2, err.Error())
 	}
 	fmt.Println("Response: ", resp)
 	return resp
@@ -42,7 +42,7 @@ func TestClientHello(t *testing.T) {
 	}
 
 	s := mux.NewServer(l)
-	s.Route("hello", hello)
+	s.Register("hello", hello)
 	go s.Listen()
 
 	conn, err := net.DialUnix("unix", nil, &net.UnixAddr{

@@ -21,7 +21,7 @@ func NewServer(socket *net.UnixListener) *server {
 	}
 }
 
-func (s *server) Route(name string, fun func(req *model.Request) *model.Response) {
+func (s *server) Register(name string, fun func(req *model.Request) *model.Response) {
 	s.handlers[name] = fun
 }
 
@@ -53,11 +53,11 @@ func (s *server) Read(wire io.ReadWriter) error {
 	}
 	fmt.Println("header:", req)
 	if req.Name == "" {
-		return protocol.Write(wire, model.NewError(-1, "Empty method"))
+		return protocol.Write(wire, model.NewErrorResponse(-1, "Empty method"))
 	}
 	h, ok := s.handlers[req.Name]
 	if !ok {
-		return protocol.Write(wire, model.NewError(-1, "Unknown method: "+req.Name))
+		return protocol.Write(wire, model.NewErrorResponse(-1, "Unknown method: "+req.Name))
 	}
 	return protocol.Write(wire, h(&req))
 }
