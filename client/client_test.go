@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/bearstech/ascetic-rpc/model"
-	"github.com/bearstech/ascetic-rpc/mux"
+	"github.com/bearstech/ascetic-rpc/server"
 )
 
 func hello(req *model.Request) (*model.Response, error) {
@@ -41,7 +41,7 @@ func TestClientHello(t *testing.T) {
 		t.Error(err)
 	}
 
-	s := mux.NewServer(l)
+	s := server.NewServer(l)
 	s.Register("hello", hello)
 	go s.Listen()
 
