@@ -10,8 +10,8 @@ import (
 	"github.com/bearstech/ascetic-rpc/wire"
 )
 
-func ping(*model.Request) *model.Response {
-	return &model.Response{Code: 1}
+func ping(*model.Request) (*model.Response, error) {
+	return &model.Response{Code: 1}, nil
 }
 
 func TestPing(t *testing.T) {
@@ -41,7 +41,7 @@ func TestPing(t *testing.T) {
 	}
 }
 
-func hello(req *model.Request) *model.Response {
+func hello(req *model.Request) (*model.Response, error) {
 	var hello model.Hello
 	err := req.GetBody(&hello)
 	if err != nil {
@@ -52,9 +52,9 @@ func hello(req *model.Request) *model.Response {
 	}
 	res, err := model.NewOKResponse(1, &world)
 	if err != nil {
-		return model.NewErrorResponse(-2, err.Error())
+		return nil, err
 	}
-	return res
+	return res, nil
 }
 
 func TestHello(t *testing.T) {

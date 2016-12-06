@@ -11,17 +11,17 @@ import (
 
 type server struct {
 	socket   *net.UnixListener
-	handlers map[string]func(req *model.Request) *model.Response
+	handlers map[string]func(req *model.Request) (*model.Response, error)
 }
 
 func NewServer(socket *net.UnixListener) *server {
 	return &server{
 		socket:   socket,
-		handlers: make(map[string]func(req *model.Request) *model.Response),
+		handlers: make(map[string]func(req *model.Request) (*model.Response, error)),
 	}
 }
 
-func (s *server) Register(name string, fun func(req *model.Request) *model.Response) {
+func (s *server) Register(name string, fun func(req *model.Request) (*model.Response, error)) {
 	s.handlers[name] = fun
 }
 
@@ -59,5 +59,9 @@ func (s *server) Read(wire io.ReadWriter) error {
 	if !ok {
 		return protocol.Write(wire, model.NewErrorResponse(-1, "Unknown method: "+req.Name))
 	}
-	return protocol.Write(wire, h(&req))
+	resp, err := h(&req)
+	if err == nil {
+		return protocol.Write(wire, resp)
+	}
+	return protocol.Write(wire, model.NewErrorResponse(-2, err.Error()))
 }

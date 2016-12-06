@@ -12,7 +12,7 @@ import (
 	"github.com/bearstech/ascetic-rpc/mux"
 )
 
-func hello(req *model.Request) *model.Response {
+func hello(req *model.Request) (*model.Response, error) {
 	var hello model.Hello
 	err := req.GetBody(&hello)
 	if err != nil {
@@ -23,10 +23,10 @@ func hello(req *model.Request) *model.Response {
 	}
 	resp, err := model.NewOKResponse(1, &world)
 	if err != nil {
-		return model.NewErrorResponse(-2, err.Error())
+		return nil, err
 	}
 	fmt.Println("Response: ", resp)
-	return resp
+	return resp, nil
 }
 
 func TestClientHello(t *testing.T) {
