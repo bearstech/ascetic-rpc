@@ -36,6 +36,7 @@ func (s *server) Deregister(name string) {
 }
 
 func (s *server) Listen() {
+	// FIXME Handling quiet stop
 	for {
 		conn, err := s.socket.AcceptUnix()
 		if err != nil {
@@ -45,8 +46,8 @@ func (s *server) Listen() {
 			for {
 				err := s.Read(conn)
 				if err != nil {
-					// Do something
 					s.socket.Close()
+					// FIXME it's error logging
 					fmt.Println(err.Error())
 					return
 				}
