@@ -9,14 +9,30 @@ import (
 
 type serverUsers struct {
 	socketHome string
+	gid        int
 	Names      map[string]*server
 }
 
-func NewServerUsers(socketHome string) *serverUsers {
+func NewServerUsers(socketHome string, groupName string) (*serverUsers, error) {
+	var gid int
+	if groupName != "" {
+		g, err := user.LookupGroup(groupName)
+		if err != nil {
+			return nil, err
+		}
+		gid, err = strconv.Atoi(g.Gid)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		gid = -1
+	}
+
 	return &serverUsers{
 		socketHome: socketHome,
+		gid:        gid,
 		Names:      make(map[string]*server),
-	}
+	}, nil
 }
 
 func (s *serverUsers) AddUser(name string) error {
