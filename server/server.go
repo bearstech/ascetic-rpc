@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 
 	"github.com/bearstech/ascetic-rpc/model"
 	"github.com/bearstech/ascetic-rpc/protocol"
@@ -12,6 +13,7 @@ import (
 type server struct {
 	socket   *net.UnixListener
 	handlers map[string]func(req *model.Request) (*model.Response, error)
+	lock     sync.Mutex
 }
 
 func NewServer(socket *net.UnixListener) *server {
@@ -22,7 +24,15 @@ func NewServer(socket *net.UnixListener) *server {
 }
 
 func (s *server) Register(name string, fun func(req *model.Request) (*model.Response, error)) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	s.handlers[name] = fun
+}
+
+func (s *server) Deregister(name string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	delete(s.handlers, name)
 }
 
 func (s *server) Listen() {
