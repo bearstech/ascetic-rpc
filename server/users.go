@@ -66,6 +66,14 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 	return serv, nil
 }
 
+func (s *ServerUsers) Listen() {
+	// FIXME Listen all the things
+}
+
+func (s *ServerUsers) Stop() {
+	// FIXME stop
+}
+
 func uidgid(uzer *user.User) (uid int, guid int, err error) {
 	// get uid user value as int
 	uid, err = strconv.Atoi(uzer.Uid)
