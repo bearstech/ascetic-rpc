@@ -13,26 +13,25 @@ type serverUsers struct {
 	Names      map[string]*server
 }
 
-func NewServerUsers(socketHome string, groupName string) (*serverUsers, error) {
-	var gid int
-	if groupName != "" {
-		g, err := user.LookupGroup(groupName)
-		if err != nil {
-			return nil, err
-		}
-		gid, err = strconv.Atoi(g.Gid)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		gid = -1
-	}
-
+func NewServerUsers(socketHome string) *serverUsers {
 	return &serverUsers{
 		socketHome: socketHome,
-		gid:        gid,
+		gid:        -1,
 		Names:      make(map[string]*server),
-	}, nil
+	}
+}
+
+func (s *serverUsers) WithGroup(groupName string) (*serverUsers, error) {
+	g, err := user.LookupGroup(groupName)
+	if err != nil {
+		return nil, err
+	}
+	gid, err := strconv.Atoi(g.Gid)
+	if err != nil {
+		return nil, err
+	}
+	s.gid = gid
+	return s, nil
 }
 
 func (s *serverUsers) AddUser(name string) error {
