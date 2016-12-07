@@ -7,21 +7,21 @@ import (
 	"strconv"
 )
 
-type serverUsers struct {
+type ServerUsers struct {
 	socketHome string
 	gid        int
 	Names      map[string]*server
 }
 
-func NewServerUsers(socketHome string) *serverUsers {
-	return &serverUsers{
+func NewServerUsers(socketHome string) *ServerUsers {
+	return &ServerUsers{
 		socketHome: socketHome,
 		gid:        -1,
 		Names:      make(map[string]*server),
 	}
 }
 
-func (s *serverUsers) WithGroup(groupName string) (*serverUsers, error) {
+func (s *ServerUsers) WithGroup(groupName string) (*ServerUsers, error) {
 	g, err := user.LookupGroup(groupName)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (s *serverUsers) WithGroup(groupName string) (*serverUsers, error) {
 	return s, nil
 }
 
-func (s *serverUsers) AddUser(name string) error {
+func (s *ServerUsers) AddUser(name string) error {
 	// verify the user exists on the system
 	uzer, err := user.Lookup(name)
 	if err != nil {
