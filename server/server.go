@@ -14,12 +14,14 @@ type server struct {
 	socket   *net.UnixListener
 	handlers map[string]func(req *model.Request) (*model.Response, error)
 	lock     sync.Mutex
+	ch       chan bool
 }
 
 func NewServer(socket *net.UnixListener) *server {
 	return &server{
 		socket:   socket,
 		handlers: make(map[string]func(req *model.Request) (*model.Response, error)),
+		ch:       make(chan bool),
 	}
 }
 
@@ -38,6 +40,12 @@ func (s *server) Deregister(name string) {
 func (s *server) Listen() {
 	// FIXME Handling quiet stop
 	for {
+		select {
+		case <-s.ch:
+			s.socket.Close()
+			return
+		default:
+		}
 		conn, err := s.socket.AcceptUnix()
 		if err != nil {
 			panic(err)
@@ -75,4 +83,9 @@ func (s *server) Read(wire io.ReadWriter) error {
 		return protocol.Write(wire, resp)
 	}
 	return protocol.Write(wire, model.NewErrorResponse(-2, err.Error()))
+}
+
+func (s *server) Stop() {
+	close(s.ch)
+	fmt.Println("Stopped")
 }

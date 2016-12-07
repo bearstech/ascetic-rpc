@@ -78,6 +78,9 @@ func (s *ServerUsers) Listen() {
 
 func (s *ServerUsers) Stop() {
 	// FIXME stop
+	for _, server := range s.Names {
+		server.Stop()
+	}
 }
 
 func uidgid(uzer *user.User) (uid int, guid int, err error) {

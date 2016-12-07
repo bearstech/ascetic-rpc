@@ -66,5 +66,6 @@ func TestClientHello(t *testing.T) {
 	if world.Message != "Hello Alice🐈" {
 		t.Error(errors.New("Bad message: " + world.Message))
 	}
+	s.Stop()
 
 }

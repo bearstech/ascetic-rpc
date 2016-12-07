@@ -43,4 +43,6 @@ func TestUsersHello(t *testing.T) {
 	if world.Message != "Hello Charlie♥️" {
 		t.Error(errors.New("Bad message: " + world.Message))
 	}
+
+	servers.Stop()
 }
