@@ -9,13 +9,15 @@ import (
 
 type ServerUsers struct {
 	socketHome string
+	socketName string
 	gid        int
 	Names      map[string]*server
 }
 
-func NewServerUsers(socketHome string) *ServerUsers {
+func NewServerUsers(socketHome, socketName string) *ServerUsers {
 	return &ServerUsers{
 		socketHome: socketHome,
+		socketName: socketName,
 		gid:        -1,
 		Names:      make(map[string]*server),
 	}
@@ -28,11 +30,13 @@ func (s *ServerUsers) MakeFolder() error {
 	}
 
 	if os.IsNotExist(err) {
-		err = os.Mkdir(s.socketHome, 0550)
+		err = os.Mkdir(s.socketHome, 0750)
 		if err != nil {
 			return err
 		}
 	}
+	// FIXME chmod 750
+	// FIXME set s.socketHome group to groupName
 	return nil
 }
 
@@ -46,7 +50,6 @@ func (s *ServerUsers) WithGroup(groupName string) (*ServerUsers, error) {
 		return nil, err
 	}
 	s.gid = gid
-	// FIXME set s.socketHome group to groupName
 	return s, nil
 }
 
@@ -57,7 +60,7 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 		return nil, err
 	}
 
-	socket, err := buildSocket(s.socketHome, uzer)
+	socket, err := buildSocket(s.socketHome, s.socketName, uzer)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +70,10 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 }
 
 func (s *ServerUsers) Listen() {
-	// FIXME Listen all the things
+	// FIXME use channels or Context to watch lifecycle of childrens
+	for _, server := range s.Names {
+		go server.Listen()
+	}
 }
 
 func (s *ServerUsers) Stop() {
@@ -109,7 +115,7 @@ func mkdirp(path string, perm os.FileMode) error {
 	return nil
 }
 
-func buildSocket(home string, uzer *user.User) (*net.UnixListener, error) {
+func buildSocket(home string, socketName string, uzer *user.User) (*net.UnixListener, error) {
 	uid, gid, err := uidgid(uzer)
 	if err != nil {
 		return nil, err
@@ -122,7 +128,7 @@ func buildSocket(home string, uzer *user.User) (*net.UnixListener, error) {
 		return nil, err
 	}
 
-	sp := sd + "/" + "restartctl.sock"
+	sp := sd + "/" + socketName
 
 	_, err = os.Stat(sp)
 	if err != nil && !os.IsNotExist(err) {
