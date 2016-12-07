@@ -2,6 +2,7 @@ package client
 
 import (
 	"io"
+	"net"
 
 	"github.com/bearstech/ascetic-rpc/model"
 	"github.com/bearstech/ascetic-rpc/protocol"
@@ -16,6 +17,16 @@ func New(wire io.ReadWriter) *client {
 	return &client{
 		wire: wire,
 	}
+}
+
+func NewClientUnix(socketPath string) (*client, error) {
+	conn, err := net.DialUnix("unix", nil, &net.UnixAddr{
+		Name: socketPath,
+		Net:  "unix"})
+	if err != nil {
+		return nil, err
+	}
+	return New(conn), nil
 }
 
 func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {

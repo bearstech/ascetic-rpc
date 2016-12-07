@@ -45,13 +45,10 @@ func TestClientHello(t *testing.T) {
 	s.Register("hello", hello)
 	go s.Listen()
 
-	conn, err := net.DialUnix("unix", nil, &net.UnixAddr{
-		Name: socketPath,
-		Net:  "unix"})
+	c, err := NewClientUnix(socketPath)
 	if err != nil {
 		t.Error(err)
 	}
-	c := New(conn)
 
 	// Unknown function
 	err = c.Do("oups", nil, nil)
