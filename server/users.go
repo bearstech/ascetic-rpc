@@ -46,23 +46,24 @@ func (s *ServerUsers) WithGroup(groupName string) (*ServerUsers, error) {
 		return nil, err
 	}
 	s.gid = gid
+	// FIXME set s.socketHome group to groupName
 	return s, nil
 }
 
-func (s *ServerUsers) AddUser(name string) error {
+func (s *ServerUsers) AddUser(name string) (*server, error) {
 	// verify the user exists on the system
 	uzer, err := user.Lookup(name)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	socket, err := buildSocket(s.socketHome, uzer)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	s.Names[name] = NewServer(socket)
-	return nil
+	serv := NewServer(socket)
+	s.Names[name] = serv
+	return serv, nil
 }
 
 func uidgid(uzer *user.User) (uid int, guid int, err error) {
