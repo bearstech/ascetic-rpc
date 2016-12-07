@@ -21,6 +21,21 @@ func NewServerUsers(socketHome string) *ServerUsers {
 	}
 }
 
+func (s *ServerUsers) MakeFolder() error {
+	_, err := os.Stat(s.socketHome)
+	if err != nil && os.IsExist(err) {
+		return err
+	}
+
+	if os.IsNotExist(err) {
+		err = os.Mkdir(s.socketHome, 0550)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *ServerUsers) WithGroup(groupName string) (*ServerUsers, error) {
 	g, err := user.LookupGroup(groupName)
 	if err != nil {
