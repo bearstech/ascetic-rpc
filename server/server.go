@@ -70,10 +70,11 @@ func (s *server) HandleSession(wire io.ReadWriteCloser) error {
 	return nil
 }
 
-func (s *server) Handle(wire io.ReadWriter) error {
+func (s *server) Handle(wire io.ReadWriteCloser) error {
 	var req model.Request
 	err := protocol.Read(wire, &req)
 	if err != nil {
+		wire.Close()
 		return err
 	}
 	fmt.Println("header:", req)
