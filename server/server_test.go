@@ -26,7 +26,7 @@ func TestPing(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = s.Read(w.ServerToClient())
+	err = s.Handle(w.ServerToClient())
 	if err != nil {
 		t.Error(err)
 	}
@@ -67,7 +67,7 @@ func TestHello(t *testing.T) {
 		Name: "plop",
 	}
 	err = protocol.Write(w.ClientToServer(), &req)
-	err = s.Read(w.ServerToClient())
+	err = s.Handle(w.ServerToClient())
 	if err != nil {
 		t.Error(err)
 	}
@@ -91,7 +91,7 @@ func TestHello(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Read(w.ServerToClient())
+	err = s.Handle(w.ServerToClient())
 	if err != nil {
 		t.Error(err)
 	}

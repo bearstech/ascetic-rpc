@@ -49,21 +49,23 @@ func (s *server) Serve() {
 		if err != nil {
 			panic(err)
 		}
-		go func() {
-			for {
-				err := s.Read(conn)
-				if err != nil {
-					s.socket.Close()
-					// FIXME it's error logging
-					fmt.Println(err.Error())
-					return
-				}
-			}
-		}()
+		go s.HandleSession(conn)
 	}
 }
 
-func (s *server) Read(wire io.ReadWriter) error {
+func (s *server) HandleSession(wire io.ReadWriteCloser) error {
+	for {
+		err := s.Handle(wire)
+		if err != nil {
+			// FIXME it's error logging
+			fmt.Println(err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *server) Handle(wire io.ReadWriter) error {
 	var req model.Request
 	err := protocol.Read(wire, &req)
 	if err != nil {
