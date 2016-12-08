@@ -142,7 +142,10 @@ func buildSocket(home string, socketName string, uzer *user.User) (*net.UnixList
 		return nil, err
 	}
 
-	l, err := net.ListenUnix("unix", &net.UnixAddr{Name: sp, Net: "unix"})
+	listener, err := net.ListenUnix("unix", &net.UnixAddr{
+		Name: sp,
+		Net:  "unix",
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -162,6 +165,9 @@ func buildSocket(home string, socketName string, uzer *user.User) (*net.UnixList
 	if err != nil {
 		return nil, err
 	}
-	return l, nil
 
+	if listener == nil {
+		panic("conn is fucked up")
+	}
+	return listener, nil
 }
