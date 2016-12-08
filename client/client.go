@@ -29,7 +29,7 @@ func NewClientUnix(socketPath string) (*client, error) {
 			Net:  "unix"})
 		if err != nil {
 			if strings.HasSuffix(err.Error(), "connect: no such file or directory") {
-				time.Sleep(time.Duration(i*250) * time.Millisecond)
+				time.Sleep(time.Duration(i*100) * time.Millisecond)
 				continue
 			}
 			return nil, err
