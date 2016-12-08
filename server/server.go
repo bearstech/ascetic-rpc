@@ -45,8 +45,13 @@ func (s *server) Serve() {
 			return
 		default:
 		}
+		if s.socket == nil {
+			fmt.Println("No more socket")
+			return
+		}
 		conn, err := s.socket.AcceptUnix()
 		if err != nil {
+			fmt.Println(err)
 			panic(err)
 		}
 		go s.HandleSession(conn)
