@@ -69,10 +69,10 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 	return serv, nil
 }
 
-func (s *ServerUsers) Listen() {
+func (s *ServerUsers) Serve() {
 	// FIXME use channels or Context to watch lifecycle of childrens
 	for _, server := range s.Names {
-		go server.Listen()
+		go server.Serve()
 	}
 }
 

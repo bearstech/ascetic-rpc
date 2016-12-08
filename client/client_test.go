@@ -43,7 +43,7 @@ func TestClientHello(t *testing.T) {
 
 	s := server.NewServer(l)
 	s.Register("hello", hello)
-	go s.Listen()
+	go s.Serve()
 
 	c, err := NewClientUnix(socketPath)
 	if err != nil {

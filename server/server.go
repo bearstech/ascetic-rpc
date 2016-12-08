@@ -37,8 +37,7 @@ func (s *server) Deregister(name string) {
 	delete(s.handlers, name)
 }
 
-func (s *server) Listen() {
-	// FIXME Handling quiet stop
+func (s *server) Serve() {
 	for {
 		select {
 		case <-s.ch:
