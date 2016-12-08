@@ -13,10 +13,10 @@ import (
 )
 
 type client struct {
-	wire io.ReadWriter
+	wire io.ReadWriteCloser
 }
 
-func New(wire io.ReadWriter) *client {
+func New(wire io.ReadWriteCloser) *client {
 	return &client{
 		wire: wire,
 	}
@@ -61,4 +61,8 @@ func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
 		return resp.GetErrorError()
 	}
 	return resp.ReadOK(r)
+}
+
+func (c *client) Close() error {
+	return c.wire.Close()
 }
