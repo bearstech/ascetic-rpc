@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/user"
 	"strconv"
+	"strings"
 )
 
 type ServerUsers struct {
@@ -138,8 +139,12 @@ func buildSocket(home string, socketName string, uzer *user.User) (*net.UnixList
 		return nil, err
 	}
 	err = os.Remove(sp)
-	if err == nil {
-		return nil, err
+	if err != nil {
+		if strings.HasSuffix(err.Error(), "no such file or directory") {
+			// Who cares? it's just a cleanup
+		} else {
+			return nil, err
+		}
 	}
 
 	listener, err := net.ListenUnix("unix", &net.UnixAddr{
