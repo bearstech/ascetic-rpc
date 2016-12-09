@@ -4,25 +4,51 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"sync"
+	"time"
 
 	"github.com/bearstech/ascetic-rpc/model"
 	"github.com/bearstech/ascetic-rpc/protocol"
 )
 
+type Deadliner interface {
+	SetDeadline(time.Time) error
+}
+
+type ReadWriteCloseDeadliner interface {
+	io.ReadWriteCloser
+	Deadliner
+}
+
 type server struct {
-	socket   *net.UnixListener
-	handlers map[string]func(req *model.Request) (*model.Response, error)
-	lock     sync.Mutex
-	ch       chan bool
+	socket    *net.UnixListener
+	handlers  map[string]func(req *model.Request) (*model.Response, error)
+	lock      sync.Mutex
+	ch        chan bool
+	waitGroup *sync.WaitGroup
 }
 
 func NewServer(socket *net.UnixListener) *server {
 	return &server{
-		socket:   socket,
-		handlers: make(map[string]func(req *model.Request) (*model.Response, error)),
-		ch:       make(chan bool),
+		socket:    socket,
+		handlers:  make(map[string]func(req *model.Request) (*model.Response, error)),
+		ch:        make(chan bool),
+		waitGroup: &sync.WaitGroup{},
 	}
+}
+
+func NewServerUnix(socketPath string) (*server, error) {
+	err := os.Remove(socketPath)
+	// FIXME Handle error other than "file not exist"
+	l, err := net.ListenUnix("unix", &net.UnixAddr{
+		Name: socketPath,
+		Net:  "unix",
+	})
+	if err != nil {
+		return nil, err
+	}
+	return NewServer(l), nil
 }
 
 func (s *server) Register(name string, fun func(req *model.Request) (*model.Response, error)) {
@@ -38,6 +64,8 @@ func (s *server) Deregister(name string) {
 }
 
 func (s *server) Serve() {
+	s.waitGroup.Add(1)
+	defer s.waitGroup.Done()
 	for {
 		select {
 		case <-s.ch:
@@ -46,24 +74,35 @@ func (s *server) Serve() {
 		default:
 		}
 		if s.socket == nil {
-			fmt.Println("No more socket")
 			return
 		}
+		s.socket.SetDeadline(time.Now().Add(1e9))
 		conn, err := s.socket.AcceptUnix()
 		if err != nil {
-			fmt.Println(err)
+			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
+				continue
+			}
 			panic(err)
 		}
+		s.waitGroup.Add(1)
 		go s.HandleSession(conn)
 	}
 }
 
-func (s *server) HandleSession(wire io.ReadWriteCloser) error {
+func (s *server) HandleSession(wire ReadWriteCloseDeadliner) error {
+	defer wire.Close()
+	defer s.waitGroup.Done()
 	for {
+		select {
+		case <-s.ch:
+			return nil
+		default:
+		}
+		wire.SetDeadline(time.Now().Add(1e9))
 		err := s.Handle(wire)
 		if err != nil {
 			// FIXME it's error logging
-			fmt.Println(err.Error())
+			fmt.Println("Handle error", err.Error())
 			return err
 		}
 	}
@@ -77,7 +116,6 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 		wire.Close()
 		return err
 	}
-	fmt.Println("header:", req)
 	if req.Name == "" {
 		return protocol.Write(wire, model.NewErrorResponse(-1, "Empty method"))
 	}
@@ -94,5 +132,5 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 
 func (s *server) Stop() {
 	close(s.ch)
-	fmt.Println("Stopped")
+	s.waitGroup.Wait()
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"time"
 )
 
 type mockWire struct {
@@ -42,6 +43,10 @@ func (w *wire) Write(p []byte) (n int, err error) {
 
 func (w *wire) Close() error {
 	w.mock.closed = true
+	return nil
+}
+
+func (w *wire) SetDeadline(t time.Time) error {
 	return nil
 }
 

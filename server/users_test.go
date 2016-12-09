@@ -27,7 +27,7 @@ func TestUsersHello(t *testing.T) {
 		t.Fatal(err)
 	}
 	myserver.Register("hello", hello)
-	servers.Serve()
+	go servers.Serve()
 
 	c, err := client.NewClientUnix("/tmp/test/" + me.Username + "/ascetic.sock")
 	if err != nil {

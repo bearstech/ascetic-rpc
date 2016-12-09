@@ -1,26 +1,30 @@
 package server
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"os/user"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type ServerUsers struct {
-	socketHome string
-	socketName string
-	gid        int
-	Names      map[string]*server
+	socketHome  string
+	socketName  string
+	gid         int
+	Names       map[string]*server
+	waitStarted *sync.WaitGroup
 }
 
 func NewServerUsers(socketHome, socketName string) *ServerUsers {
 	return &ServerUsers{
-		socketHome: socketHome,
-		socketName: socketName,
-		gid:        -1,
-		Names:      make(map[string]*server),
+		socketHome:  socketHome,
+		socketName:  socketName,
+		gid:         -1,
+		Names:       make(map[string]*server),
+		waitStarted: &sync.WaitGroup{},
 	}
 }
 
@@ -61,27 +65,47 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 		return nil, err
 	}
 
-	socket, err := buildSocket(s.socketHome, s.socketName, uzer)
+	listener, err := buildSocket(s.socketHome, s.socketName, uzer)
+	fmt.Println("socket, err", listener, err)
 	if err != nil {
 		return nil, err
 	}
-	serv := NewServer(socket)
+	if listener == nil {
+		panic("Socket can't be nil")
+	}
+	serv := NewServer(listener)
 	s.Names[name] = serv
 	return serv, nil
 }
 
 func (s *ServerUsers) Serve() {
 	// FIXME use channels or Context to watch lifecycle of childrens
+	wait := &sync.WaitGroup{}
 	for _, server := range s.Names {
-		go server.Serve()
+		wait.Add(1)
+		go func() {
+			server.Serve()
+			wait.Done()
+		}()
 	}
+	wait.Wait()
 }
 
 func (s *ServerUsers) Stop() {
 	// FIXME stop
-	for _, server := range s.Names {
-		server.Stop()
+	w := &sync.WaitGroup{}
+	fmt.Println("Names: ", s.Names)
+	for name, server := range s.Names {
+		w.Add(1)
+		fmt.Println("Please stop this server ", name)
+		go func() {
+			fmt.Println("# try to stop ", name)
+			server.Stop()
+			w.Done()
+			fmt.Println("# server stopped: ", name)
+		}()
 	}
+	w.Wait()
 }
 
 func uidgid(uzer *user.User) (uid int, guid int, err error) {

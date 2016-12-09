@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bearstech/ascetic-rpc/client"
 	"github.com/bearstech/ascetic-rpc/model"
 	"github.com/bearstech/ascetic-rpc/protocol"
 	"github.com/bearstech/ascetic-rpc/wire"
@@ -110,5 +111,43 @@ func TestHello(t *testing.T) {
 	}
 	if world.Message != "Hello Bob♥️" {
 		t.Error(errors.New("Bad message: " + world.Message))
+	}
+}
+
+func TestHelloServer(t *testing.T) {
+	socketPath := "/tmp/test.sock"
+	s, err := NewServerUnix(socketPath)
+	if err != nil {
+		t.Error(err)
+	}
+	s.Register("hello", hello)
+	serverStopped := false
+	go func() {
+		s.Serve()
+		serverStopped = true
+	}()
+
+	c, err := client.NewClientUnix(socketPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	hello := model.Hello{Name: "Alice"}
+	var world model.World
+
+	err = c.Do("hello", &hello, &world)
+	if err != nil {
+		t.Error(err)
+	}
+	err = c.Close()
+	if err != nil {
+		t.Error(err)
+	}
+	if world.Message != "Hello Alice♥️" {
+		t.Error(errors.New("Bad message: " + world.Message))
+	}
+	s.Stop()
+	if !serverStopped {
+		t.Error(errors.New("Bad stop"))
 	}
 }
