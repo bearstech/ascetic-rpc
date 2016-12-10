@@ -6,6 +6,36 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// Error
+
+type TypedError interface {
+	Type() ErrorType
+}
+
+type RpcError struct {
+	message string
+	_type   ErrorType
+}
+
+func (r *RpcError) Error() string {
+	return r.message
+}
+
+func (r *RpcError) Type() ErrorType {
+	return r._type
+}
+
+func NewApplicationError(err error) *RpcError {
+	return &RpcError{
+		message: err.Error(),
+		_type:   Error_APPLICATION,
+	}
+}
+
+func (e *Error) Error() string {
+	return e.Message
+}
+
 // Request
 
 func (r *Request) SetBody(body proto.Message) error {
@@ -61,19 +91,19 @@ func (r *Response) SetError(e *Error) {
 	r.Body = &Response_Error{Error: e}
 }
 
-func NewErrorResponse(code int32, message string) *Response {
+func NewErrorResponse(_type ErrorType, message string) *Response {
 	return &Response{
-		Code: code,
 		Body: &Response_Error{
 			Error: &Error{
+				Type:    _type,
 				Message: message,
 			},
 		},
 	}
 }
 
-func NewOKResponse(code int32, body proto.Message) (*Response, error) {
-	r := &Response{Code: code}
+func NewOKResponse(body proto.Message) (*Response, error) {
+	r := &Response{}
 	err := r.SetOK(body)
 	if err != nil {
 		return nil, err
@@ -82,8 +112,5 @@ func NewOKResponse(code int32, body proto.Message) (*Response, error) {
 }
 
 func (r *Response) GetErrorError() error {
-	if r.Code >= 0 {
-		return nil
-	}
 	return errors.New(r.GetError().Message)
 }

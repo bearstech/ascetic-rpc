@@ -117,17 +117,17 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 		return err
 	}
 	if req.Name == "" {
-		return protocol.Write(wire, model.NewErrorResponse(-1, "Empty method"))
+		return protocol.Write(wire, model.NewErrorResponse(model.Error_BAD_METHOD, "Empty method"))
 	}
 	h, ok := s.handlers[req.Name]
 	if !ok {
-		return protocol.Write(wire, model.NewErrorResponse(-1, "Unknown method: "+req.Name))
+		return protocol.Write(wire, model.NewErrorResponse(model.Error_BAD_METHOD, "Unknown method: "+req.Name))
 	}
 	resp, err := h(&req)
 	if err == nil {
 		return protocol.Write(wire, resp)
 	}
-	return protocol.Write(wire, model.NewErrorResponse(-2, err.Error()))
+	return protocol.Write(wire, model.NewErrorResponse(model.Error_APPLICATION, err.Error()))
 }
 
 func (s *server) Stop() {

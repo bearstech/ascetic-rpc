@@ -21,7 +21,7 @@ func hello(req *model.Request) (*model.Response, error) {
 	world := model.World{
 		Message: fmt.Sprintf("Hello %s🐈", hello.Name),
 	}
-	resp, err := model.NewOKResponse(1, &world)
+	resp, err := model.NewOKResponse(&world)
 	if err != nil {
 		return nil, err
 	}

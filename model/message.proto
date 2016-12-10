@@ -2,20 +2,29 @@ syntax = "proto3";
 package model;
 
 message Request {
-    string Name      = 1; // mandatory
-    string Signature = 2;
-    bytes  RawBody      = 3;
+    string Name       = 1; // mandatory
+    string Signature  = 2;
+    bytes  RawBody    = 3;
 }
 
 message Response {
-    int32  Code      = 1; // mandatory
-    string Signature = 2;
     oneof Body {
-        Error Error  = 3;
-        bytes RawOK     = 4;
+        Error Error   = 1;
+        bytes RawOK   = 2;
     }
+    string Signature  = 3;
 }
 
 message Error {
-    string Message   = 1;
+    string Message    = 1;
+    enum type {
+        APPLICATION   = 0;
+        SERIALIZATION = 1;
+        PROTOCOL      = 2;
+        NETWORK       = 3;
+        SERVER_PANIC  = 4;
+        TIMEOUT       = 5;
+        BAD_METHOD    = 6;
+    }
+    type Type         = 2;
 }

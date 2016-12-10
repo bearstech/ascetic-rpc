@@ -12,7 +12,7 @@ import (
 )
 
 func ping(*model.Request) (*model.Response, error) {
-	return &model.Response{Code: 1}, nil
+	return &model.Response{}, nil
 }
 
 func TestPing(t *testing.T) {
@@ -37,7 +37,7 @@ func TestPing(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if resp.Code != 1 {
+	if resp.GetError() != nil {
 		t.Fatal()
 	}
 }
@@ -51,7 +51,7 @@ func hello(req *model.Request) (*model.Response, error) {
 	world := model.World{
 		Message: fmt.Sprintf("Hello %s♥️", hello.Name),
 	}
-	res, err := model.NewOKResponse(1, &world)
+	res, err := model.NewOKResponse(&world)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if resp.Code != -1 {
+	if resp.GetError() == nil {
 		t.Error(errors.New("It should be unknown"))
 	}
 	fmt.Println(w.Len())
@@ -100,7 +100,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if resp.Code < 0 {
+	if resp.GetError() != nil {
 		t.Error(errors.New("It's an error: " + resp.GetError().Message))
 	}
 

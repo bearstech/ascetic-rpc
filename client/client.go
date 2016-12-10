@@ -57,8 +57,9 @@ func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
 	if err != nil {
 		return err
 	}
-	if resp.Code < 0 { // it's an error
-		return resp.GetErrorError()
+	e := resp.GetError()
+	if e != nil { // it's an error
+		return e
 	}
 	return resp.ReadOK(r)
 }
