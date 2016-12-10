@@ -25,6 +25,17 @@ func (r *RpcError) Type() ErrorType {
 	return r._type
 }
 
+func (r *RpcError) String() string {
+	return "<RpcError " + ErrorType_name[int32(r._type)] + " " + r.message + " >"
+}
+
+func NewRpcError(err ErrorType, message string) *RpcError {
+	return &RpcError{
+		message: message,
+		_type:   err,
+	}
+}
+
 func NewApplicationError(err error) *RpcError {
 	return &RpcError{
 		message: err.Error(),

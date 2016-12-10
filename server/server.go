@@ -101,8 +101,11 @@ func (s *server) HandleSession(wire ReadWriteCloseDeadliner) error {
 		wire.SetDeadline(time.Now().Add(1e9))
 		err := s.Handle(wire)
 		if err != nil {
+			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
+				continue
+			}
 			// FIXME it's error logging
-			fmt.Println("Handle error", err.Error())
+			fmt.Println("Handle error", err)
 			return err
 		}
 	}
