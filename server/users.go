@@ -66,7 +66,6 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 	}
 
 	listener, err := buildSocket(s.socketHome, s.socketName, uzer)
-	fmt.Println("socket, err", listener, err)
 	if err != nil {
 		return nil, err
 	}
@@ -97,9 +96,7 @@ func (s *ServerUsers) Stop() {
 	fmt.Println("Names: ", s.Names)
 	for name, server := range s.Names {
 		w.Add(1)
-		fmt.Println("Please stop this server ", name)
 		go func() {
-			fmt.Println("# try to stop ", name)
 			server.Stop()
 			w.Done()
 			fmt.Println("# server stopped: ", name)
