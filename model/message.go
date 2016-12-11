@@ -1,10 +1,6 @@
 package model
 
-import (
-	"errors"
-
-	"github.com/golang/protobuf/proto"
-)
+import "github.com/golang/protobuf/proto"
 
 // Error
 
@@ -120,8 +116,4 @@ func NewOKResponse(body proto.Message) (*Response, error) {
 		return nil, err
 	}
 	return r, nil
-}
-
-func (r *Response) GetErrorError() error {
-	return errors.New(r.GetError().Message)
 }
