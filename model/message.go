@@ -91,6 +91,9 @@ func (r *Response) SetOK(body proto.Message) error {
 }
 
 func (r *Response) ReadOK(body proto.Message) error {
+	if body == nil {
+		return nil
+	}
 	return proto.Unmarshal(r.GetRawOK(), body)
 }
 
