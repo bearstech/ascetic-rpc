@@ -11,14 +11,10 @@ import (
 	"github.com/bearstech/ascetic-rpc/wire"
 )
 
-func ping(*model.Request) (*model.Response, error) {
-	return &model.Response{}, nil
-}
-
 func TestPing(t *testing.T) {
 	w := wire.New()
 	s := NewServer(nil)
-	s.Register("ping", ping)
+	s.Register("ping", Ping)
 
 	req := model.Request{
 		Name: "ping",

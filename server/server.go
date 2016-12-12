@@ -127,13 +127,21 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 		return protocol.Write(wire, model.NewErrorResponse(model.Error_BAD_METHOD, "Unknown method: "+req.Name))
 	}
 	resp, err := h(&req)
-	if err == nil {
-		return protocol.Write(wire, resp)
+	if err != nil {
+		return protocol.Write(wire, model.NewErrorResponse(model.Error_APPLICATION, err.Error()))
 	}
-	return protocol.Write(wire, model.NewErrorResponse(model.Error_APPLICATION, err.Error()))
+	if resp == nil { // It's a lazy answer, but I can handle it.
+		resp = &model.Response{}
+	}
+	return protocol.Write(wire, resp)
 }
 
 func (s *server) Stop() {
 	close(s.ch)
 	s.waitGroup.Wait()
+}
+
+func Ping(req *model.Request) (*model.Response, error) {
+	// assert body is nil
+	return nil, nil
 }
