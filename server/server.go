@@ -12,6 +12,9 @@ import (
 	"github.com/bearstech/ascetic-rpc/protocol"
 )
 
+// Graceful stop pattern came from :
+// https://rcrowley.org/articles/golang-graceful-stop.html
+
 type Deadliner interface {
 	SetDeadline(time.Time) error
 }
