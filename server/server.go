@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -129,7 +130,23 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 	if !ok {
 		return protocol.Write(wire, model.NewErrorResponse(model.Error_BAD_METHOD, "Unknown method: "+req.Name))
 	}
-	resp, err := h(&req)
+
+	var resp *model.Response
+
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				if er, ok := r.(error); ok {
+					err = er
+				} else {
+					fmt.Println("Panic :", r)
+					err = errors.New("Uncatchable error")
+				}
+				resp = nil
+			}
+		}()
+		resp, err = h(&req)
+	}()
 	if err != nil {
 		return protocol.Write(wire, model.NewErrorResponse(model.Error_APPLICATION, err.Error()))
 	}

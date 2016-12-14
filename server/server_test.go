@@ -147,3 +147,32 @@ func TestHelloServer(t *testing.T) {
 		t.Error(errors.New("Bad stop"))
 	}
 }
+
+func dontpanic(req *model.Request) (*model.Response, error) {
+	panic(errors.New("oups"))
+	return nil, nil
+}
+
+func TestPanic(t *testing.T) {
+
+	socketPath := "/tmp/test.sock"
+	s, err := NewServerUnix(socketPath)
+	if err != nil {
+		t.Error(err)
+	}
+	defer s.Stop()
+	s.Register("panic", dontpanic)
+	go s.Serve()
+
+	c, err := client.NewClientUnix(socketPath)
+	if err != nil {
+		t.Error(err)
+	}
+	err = c.Do("panic", nil, nil)
+	if err == nil {
+		t.Error(errors.New("Should not be nil"))
+	}
+	if err.Error() != "oups" {
+		t.Error(errors.New("Should be oups"))
+	}
+}
