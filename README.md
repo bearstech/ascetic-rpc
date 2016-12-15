@@ -20,16 +20,16 @@ Here is the "hello world" example.
 Describe your input/output, or request/response, with protobuf:
 
 ```protbuf
-    syntax = "proto3";
-    package model;
+syntax = "proto3";
+package model;
 
-    message Hello {
-        string Name = 1;
-    }
+message Hello {
+    string Name = 1;
+}
 
-    message World {
-        string Message = 1;
-    }
+message World {
+    string Message = 1;
+}
 ```
 
 The function:
