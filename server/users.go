@@ -65,7 +65,7 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 		return nil, err
 	}
 
-	listener, err := buildSocket(s.socketHome, s.socketName, uzer)
+	listener, err := buildSocket(s.socketHome, s.socketName, uzer, s.gid)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func mkdirp(path string, perm os.FileMode) error {
 	return nil
 }
 
-func buildSocket(home string, socketName string, uzer *user.User) (*net.UnixListener, error) {
+func buildSocket(home string, socketName string, uzer *user.User, withGid int) (*net.UnixListener, error) {
 	uid, gid, err := uidgid(uzer)
 	if err != nil {
 		return nil, err
@@ -182,14 +182,28 @@ func buildSocket(home string, socketName string, uzer *user.User) (*net.UnixList
 	}
 
 	// change socket ownsership to username
-	err = os.Chown(sd, uid, gid)
-	if err != nil {
-		return nil, err
+	if withGid != -1 {
+		err = os.Chown(sd, uid, withGid)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = os.Chown(sd, uid, gid)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	err = os.Chown(sp, uid, gid)
-	if err != nil {
-		return nil, err
+	if withGid != -1 {
+		err = os.Chown(sp, uid, withGid)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = os.Chown(sp, uid, gid)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if listener == nil {
