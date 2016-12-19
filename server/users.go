@@ -40,8 +40,14 @@ func (s *ServerUsers) MakeFolder() error {
 			return err
 		}
 	}
-	// FIXME chmod 750
-	// FIXME set s.socketHome group to groupName
+
+	if s.gid != -1 {
+		err = os.Chown(s.socketHome, 0, s.gid)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
