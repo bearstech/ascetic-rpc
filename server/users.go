@@ -40,8 +40,14 @@ func (s *ServerUsers) MakeFolder() error {
 			return err
 		}
 	}
-	// FIXME chmod 750
-	// FIXME set s.socketHome group to groupName
+
+	if s.gid != -1 {
+		err = os.Chown(s.socketHome, 0, s.gid)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -148,7 +154,7 @@ func buildSocket(home string, socketName string, uzer *user.User, withGid int) (
 
 	// socket dir
 	sd := home + "/" + uzer.Username
-	err = mkdirp(sd, 0700)
+	err = mkdirp(sd, 0750)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +182,7 @@ func buildSocket(home string, socketName string, uzer *user.User, withGid int) (
 		return nil, err
 	}
 
-	err = os.Chmod(sp, 0600)
+	err = os.Chmod(sp, 0660)
 	if err != nil {
 		return nil, err
 	}
