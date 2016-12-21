@@ -150,7 +150,6 @@ func TestHelloServer(t *testing.T) {
 
 func dontpanic(req *model.Request) (*model.Response, error) {
 	panic(errors.New("oups"))
-	return nil, nil
 }
 
 func TestPanic(t *testing.T) {

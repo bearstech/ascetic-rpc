@@ -113,7 +113,6 @@ func (s *server) HandleSession(wire ReadWriteCloseDeadliner) error {
 			return err
 		}
 	}
-	return nil
 }
 
 func (s *server) Handle(wire io.ReadWriteCloser) error {
