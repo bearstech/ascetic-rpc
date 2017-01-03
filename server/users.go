@@ -65,6 +65,11 @@ func (s *ServerUsers) WithGroup(groupName string) (*ServerUsers, error) {
 }
 
 func (s *ServerUsers) AddUser(name string) (*server, error) {
+	serv, ok := s.Names[name]
+	if ok {
+		return serv, nil
+	}
+
 	// verify the user exists on the system
 	uzer, err := user.Lookup(name)
 	if err != nil {
@@ -78,7 +83,7 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 	if listener == nil {
 		panic("Socket can't be nil")
 	}
-	serv := NewServer(listener)
+	serv = NewServer(listener)
 	s.Names[name] = serv
 	return serv, nil
 }

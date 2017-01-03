@@ -26,6 +26,16 @@ func TestUsersHello(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	myserver2, err := servers.AddUser(me.Username)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if myserver != myserver2 {
+		t.Error(errors.New("It should be the same"))
+	}
+
 	myserver.Register("hello", hello)
 	go servers.Serve()
 
