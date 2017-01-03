@@ -19,13 +19,15 @@ type ServerUsers struct {
 }
 
 func NewServerUsers(socketHome, socketName string) *ServerUsers {
-	return &ServerUsers{
+	s := &ServerUsers{
 		socketHome:  socketHome,
 		socketName:  socketName,
 		gid:         -1,
 		Names:       make(map[string]*server),
 		waitStarted: &sync.WaitGroup{},
 	}
+	s.waitStarted.Add(1) // wait for empty loop
+	return s
 }
 
 func (s *ServerUsers) MakeFolder() error {
@@ -89,31 +91,28 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 }
 
 func (s *ServerUsers) Serve() {
-	// FIXME use channels or Context to watch lifecycle of childrens
-	wait := &sync.WaitGroup{}
 	for _, server := range s.Names {
-		wait.Add(1)
-		go func() {
-			server.Serve()
-			wait.Done()
-		}()
+		if !server.IsRunning() {
+			s.waitStarted.Add(1)
+			go func() {
+				server.Serve()
+				s.waitStarted.Done()
+			}()
+		}
 	}
-	wait.Wait()
+}
+
+func (s *ServerUsers) Wait() {
+	s.waitStarted.Wait()
 }
 
 func (s *ServerUsers) Stop() {
 	// FIXME stop
-	w := &sync.WaitGroup{}
 	fmt.Println("Names: ", s.Names)
-	for name, server := range s.Names {
-		w.Add(1)
-		go func() {
-			server.Stop()
-			w.Done()
-			fmt.Println("# server stopped: ", name)
-		}()
+	for _, server := range s.Names {
+		go server.Stop()
 	}
-	w.Wait()
+	s.waitStarted.Done() // For the empty loop
 }
 
 func uidgid(uzer *user.User) (uid int, guid int, err error) {

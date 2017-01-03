@@ -37,7 +37,7 @@ func TestUsersHello(t *testing.T) {
 	}
 
 	myserver.Register("hello", hello)
-	go servers.Serve()
+	servers.Serve()
 
 	c, err := client.NewClientUnix("/tmp/test/" + me.Username + "/ascetic.sock")
 	if err != nil {
@@ -55,4 +55,6 @@ func TestUsersHello(t *testing.T) {
 	}
 
 	servers.Stop()
+	servers.Wait()
+	t.Log("Server stopped")
 }
