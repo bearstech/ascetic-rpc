@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"os/user"
 	"sync"
 	"testing"
@@ -55,6 +56,15 @@ func TestUsersHello(t *testing.T) {
 		t.Error(errors.New("Bad message: " + world.Message))
 	}
 
+	t.Log("Users", len(servers.Names))
+	err = servers.RemoveUser(me.Username)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("Users", len(servers.Names))
+	if len(servers.Names) != 0 {
+		t.Error(fmt.Errorf("Bad size : %i", len(servers.Names)))
+	}
 	servers.Stop()
 	servers.Wait()
 	t.Log("Server stopped")

@@ -90,6 +90,22 @@ func (s *ServerUsers) AddUser(name string) (*server, error) {
 	return serv, nil
 }
 
+func (s *ServerUsers) RemoveUser(name string) error {
+	serv, ok := s.Names[name]
+	if !ok {
+		return fmt.Errorf("Can't remove User %s, it doesn't exist", name)
+	}
+	var err error
+	if serv.IsRunning() {
+		err = serv.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	delete(s.Names, name)
+	return nil
+}
+
 func (s *ServerUsers) Serve() {
 	for _, server := range s.Names {
 		if !server.IsRunning() {
