@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"os/user"
+	"sync"
 	"testing"
 
 	"github.com/bearstech/ascetic-rpc/client"
@@ -57,4 +58,22 @@ func TestUsersHello(t *testing.T) {
 	servers.Stop()
 	servers.Wait()
 	t.Log("Server stopped")
+}
+
+func TestNoneUsers(t *testing.T) {
+	w := &sync.WaitGroup{}
+	servers := NewServerUsers("/tmp/test", "ascetic.sock")
+
+	err := servers.MakeFolder()
+	if err != nil {
+		t.Fatal(err)
+	}
+	servers.Serve()
+	w.Add(1)
+	go func() {
+		servers.Wait()
+		w.Done()
+	}()
+	servers.Stop()
+	w.Wait()
 }
