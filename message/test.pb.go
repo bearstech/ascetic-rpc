@@ -13,6 +13,12 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type Hello struct {
 	Name string `protobuf:"bytes,1,opt,name=Name" json:"Name,omitempty"`
 }
@@ -20,7 +26,14 @@ type Hello struct {
 func (m *Hello) Reset()                    { *m = Hello{} }
 func (m *Hello) String() string            { return proto.CompactTextString(m) }
 func (*Hello) ProtoMessage()               {}
-func (*Hello) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+func (*Hello) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+func (m *Hello) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
 
 type World struct {
 	Message string `protobuf:"bytes,1,opt,name=Message" json:"Message,omitempty"`
@@ -29,7 +42,14 @@ type World struct {
 func (m *World) Reset()                    { *m = World{} }
 func (m *World) String() string            { return proto.CompactTextString(m) }
 func (*World) ProtoMessage()               {}
-func (*World) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+func (*World) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+func (m *World) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
 
 func init() {
 	proto.RegisterType((*Hello)(nil), "message.Hello")
