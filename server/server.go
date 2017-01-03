@@ -158,10 +158,14 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 	return protocol.Write(wire, resp)
 }
 
-func (s *server) Stop() {
+func (s *server) Stop() error {
+	if !s.running {
+		return errors.New("Server is not running")
+	}
 	close(s.ch)
 	s.waitGroup.Wait()
 	s.running = false
+	return nil
 }
 
 func (s *server) IsRunning() bool {
