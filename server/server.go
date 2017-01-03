@@ -31,6 +31,7 @@ type server struct {
 	lock      sync.Mutex
 	ch        chan bool
 	waitGroup *sync.WaitGroup
+	running   bool
 }
 
 func NewServer(socket *net.UnixListener) *server {
@@ -39,6 +40,7 @@ func NewServer(socket *net.UnixListener) *server {
 		handlers:  make(map[string]func(req *model.Request) (*model.Response, error)),
 		ch:        make(chan bool),
 		waitGroup: &sync.WaitGroup{},
+		running:   false,
 	}
 }
 
@@ -69,6 +71,7 @@ func (s *server) Deregister(name string) {
 
 func (s *server) Serve() {
 	s.waitGroup.Add(1)
+	s.running = true
 	defer s.waitGroup.Done()
 	for {
 		select {
@@ -158,6 +161,11 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 func (s *server) Stop() {
 	close(s.ch)
 	s.waitGroup.Wait()
+	s.running = false
+}
+
+func (s *server) IsRunning() bool {
+	return s.running
 }
 
 func Ping(req *model.Request) (*model.Response, error) {

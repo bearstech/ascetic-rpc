@@ -146,6 +146,9 @@ func TestHelloServer(t *testing.T) {
 	if !serverStopped {
 		t.Error(errors.New("Bad stop"))
 	}
+	if s.IsRunning() {
+		t.Error(errors.New("Ghost running"))
+	}
 }
 
 func dontpanic(req *model.Request) (*model.Response, error) {
