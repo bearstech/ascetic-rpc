@@ -1,4 +1,4 @@
-package model
+package message
 
 import "github.com/golang/protobuf/proto"
 

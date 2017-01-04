@@ -8,20 +8,20 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bearstech/ascetic-rpc/model"
+	"github.com/bearstech/ascetic-rpc/message"
 	"github.com/bearstech/ascetic-rpc/server"
 )
 
-func hello(req *model.Request) (*model.Response, error) {
-	var hello model.Hello
+func hello(req *message.Request) (*message.Response, error) {
+	var hello message.Hello
 	err := req.GetBody(&hello)
 	if err != nil {
 		panic(err)
 	}
-	world := model.World{
+	world := message.World{
 		Message: fmt.Sprintf("Hello %s🐈", hello.Name),
 	}
-	resp, err := model.NewOKResponse(&world)
+	resp, err := message.NewOKResponse(&world)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +56,8 @@ func TestClientHello(t *testing.T) {
 		t.Error(errors.New("Wrong error: " + err.Error()))
 	}
 
-	hello := model.Hello{Name: "Alice"}
-	var world model.World
+	hello := message.Hello{Name: "Alice"}
+	var world message.World
 
 	err = c.Do("hello", &hello, &world)
 	if err != nil {

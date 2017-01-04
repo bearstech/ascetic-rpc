@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bearstech/ascetic-rpc/model"
+	"github.com/bearstech/ascetic-rpc/message"
 	"github.com/bearstech/ascetic-rpc/protocol"
 )
 
@@ -27,7 +27,7 @@ type ReadWriteCloseDeadliner interface {
 
 type server struct {
 	socket    *net.UnixListener
-	handlers  map[string]func(req *model.Request) (*model.Response, error)
+	handlers  map[string]func(req *message.Request) (*message.Response, error)
 	lock      sync.Mutex
 	ch        chan bool
 	waitGroup *sync.WaitGroup
@@ -37,7 +37,7 @@ type server struct {
 func NewServer(socket *net.UnixListener) *server {
 	return &server{
 		socket:    socket,
-		handlers:  make(map[string]func(req *model.Request) (*model.Response, error)),
+		handlers:  make(map[string]func(req *message.Request) (*message.Response, error)),
 		ch:        make(chan bool),
 		waitGroup: &sync.WaitGroup{},
 		running:   false,
@@ -57,7 +57,7 @@ func NewServerUnix(socketPath string) (*server, error) {
 	return NewServer(l), nil
 }
 
-func (s *server) Register(name string, fun func(req *model.Request) (*model.Response, error)) {
+func (s *server) Register(name string, fun func(req *message.Request) (*message.Response, error)) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.handlers[name] = fun
@@ -119,21 +119,21 @@ func (s *server) HandleSession(wire ReadWriteCloseDeadliner) error {
 }
 
 func (s *server) Handle(wire io.ReadWriteCloser) error {
-	var req model.Request
+	var req message.Request
 	err := protocol.Read(wire, &req)
 	if err != nil {
 		wire.Close()
 		return err
 	}
 	if req.Name == "" {
-		return protocol.Write(wire, model.NewErrorResponse(model.Error_BAD_METHOD, "Empty method"))
+		return protocol.Write(wire, message.NewErrorResponse(message.Error_BAD_METHOD, "Empty method"))
 	}
 	h, ok := s.handlers[req.Name]
 	if !ok {
-		return protocol.Write(wire, model.NewErrorResponse(model.Error_BAD_METHOD, "Unknown method: "+req.Name))
+		return protocol.Write(wire, message.NewErrorResponse(message.Error_BAD_METHOD, "Unknown method: "+req.Name))
 	}
 
-	var resp *model.Response
+	var resp *message.Response
 
 	func() {
 		defer func() {
@@ -150,10 +150,10 @@ func (s *server) Handle(wire io.ReadWriteCloser) error {
 		resp, err = h(&req)
 	}()
 	if err != nil {
-		return protocol.Write(wire, model.NewErrorResponse(model.Error_APPLICATION, err.Error()))
+		return protocol.Write(wire, message.NewErrorResponse(message.Error_APPLICATION, err.Error()))
 	}
 	if resp == nil { // It's a lazy answer, but I can handle it.
-		resp = &model.Response{}
+		resp = &message.Response{}
 	}
 	return protocol.Write(wire, resp)
 }
@@ -172,7 +172,7 @@ func (s *server) IsRunning() bool {
 	return s.running
 }
 
-func Ping(req *model.Request) (*model.Response, error) {
+func Ping(req *message.Request) (*message.Response, error) {
 	// assert body is nil
 	return nil, nil
 }

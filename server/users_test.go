@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/bearstech/ascetic-rpc/client"
-	"github.com/bearstech/ascetic-rpc/model"
+	"github.com/bearstech/ascetic-rpc/message"
 )
 
 // hello is declared in server_test.go
@@ -46,8 +46,8 @@ func TestUsersHello(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hello := model.Hello{Name: "Charlie"}
-	var world model.World
+	hello := message.Hello{Name: "Charlie"}
+	var world message.World
 	err = c.Do("hello", &hello, &world)
 	if err != nil {
 		t.Fatal(err)

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bearstech/ascetic-rpc/model"
+	"github.com/bearstech/ascetic-rpc/message"
 	"github.com/bearstech/ascetic-rpc/protocol"
 	"github.com/golang/protobuf/proto"
 )
@@ -40,7 +40,7 @@ func NewClientUnix(socketPath string) (*client, error) {
 }
 
 func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
-	req := model.Request{
+	req := message.Request{
 		Name: fun,
 	}
 	err := req.SetBody(arg)
@@ -52,7 +52,7 @@ func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
 		return err
 	}
 
-	var resp model.Response
+	var resp message.Response
 	err = protocol.Read(c.wire, &resp)
 	if err != nil {
 		return err

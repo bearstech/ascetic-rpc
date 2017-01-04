@@ -1,5 +1,5 @@
 syntax = "proto3";
-package model;
+package message;
 
 message Request {
     string Name       = 1; // mandatory

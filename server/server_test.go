@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/bearstech/ascetic-rpc/client"
-	"github.com/bearstech/ascetic-rpc/model"
+	"github.com/bearstech/ascetic-rpc/message"
 	"github.com/bearstech/ascetic-rpc/protocol"
 	"github.com/bearstech/ascetic-rpc/wire"
 )
@@ -16,7 +16,7 @@ func TestPing(t *testing.T) {
 	s := NewServer(nil)
 	s.Register("ping", Ping)
 
-	req := model.Request{
+	req := message.Request{
 		Name: "ping",
 	}
 	err := protocol.Write(w.ClientToServer(), &req)
@@ -28,7 +28,7 @@ func TestPing(t *testing.T) {
 		t.Error(err)
 	}
 
-	var resp model.Response
+	var resp message.Response
 	err = protocol.Read(w.ClientToServer(), &resp)
 	if err != nil {
 		t.Error(err)
@@ -38,16 +38,16 @@ func TestPing(t *testing.T) {
 	}
 }
 
-func hello(req *model.Request) (*model.Response, error) {
-	var hello model.Hello
+func hello(req *message.Request) (*message.Response, error) {
+	var hello message.Hello
 	err := req.GetBody(&hello)
 	if err != nil {
 		panic(err)
 	}
-	world := model.World{
+	world := message.World{
 		Message: fmt.Sprintf("Hello %s♥️", hello.Name),
 	}
-	res, err := model.NewOKResponse(&world)
+	res, err := message.NewOKResponse(&world)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func TestHello(t *testing.T) {
 	s.Register("hello", hello)
 
 	var err error
-	req := model.Request{
+	req := message.Request{
 		Name: "plop",
 	}
 	err = protocol.Write(w.ClientToServer(), &req)
@@ -68,7 +68,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	var resp model.Response
+	var resp message.Response
 	err = protocol.Read(w.ClientToServer(), &resp)
 	if err != nil {
 		t.Error(err)
@@ -78,7 +78,7 @@ func TestHello(t *testing.T) {
 	}
 	fmt.Println(w.Len())
 
-	req2, err := model.NewRequest("hello", &model.Hello{Name: "Bob"})
+	req2, err := message.NewRequest("hello", &message.Hello{Name: "Bob"})
 	if err != nil {
 		t.Error(err)
 	}
@@ -100,7 +100,7 @@ func TestHello(t *testing.T) {
 		t.Error(errors.New("It's an error: " + resp.GetError().Message))
 	}
 
-	var world model.World
+	var world message.World
 	err = resp.ReadOK(&world)
 	if err != nil {
 		t.Error(err)
@@ -128,8 +128,8 @@ func TestHelloServer(t *testing.T) {
 		t.Error(err)
 	}
 
-	hello := model.Hello{Name: "Alice"}
-	var world model.World
+	hello := message.Hello{Name: "Alice"}
+	var world message.World
 
 	err = c.Do("hello", &hello, &world)
 	if err != nil {
@@ -151,7 +151,7 @@ func TestHelloServer(t *testing.T) {
 	}
 }
 
-func dontpanic(req *model.Request) (*model.Response, error) {
+func dontpanic(req *message.Request) (*message.Response, error) {
 	panic(errors.New("oups"))
 }
 

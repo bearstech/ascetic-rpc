@@ -6,7 +6,7 @@ clean:
 	rm -rf gopath
 
 protoc:
-	protoc --go_out=. model/*.proto
+	protoc --go_out=. message/*.proto
 
 test:
 	go test -v -cover github.com/bearstech/ascetic-rpc/server
