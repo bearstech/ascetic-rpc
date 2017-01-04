@@ -111,6 +111,9 @@ func (s *server) HandleSession(wire ReadWriteCloseDeadliner) error {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
 				continue
 			}
+			if err == io.EOF { // client deconnects
+				continue
+			}
 			// FIXME it's error logging
 			fmt.Println("Handle error", err)
 			return err
