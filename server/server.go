@@ -112,7 +112,7 @@ func (s *server) HandleSession(wire ReadWriteCloseDeadliner) error {
 				continue
 			}
 			if err == io.EOF { // client deconnects
-				continue
+				return nil
 			}
 			// FIXME it's error logging
 			fmt.Println("Handle error", err)
