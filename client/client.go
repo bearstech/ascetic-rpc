@@ -36,7 +36,7 @@ func NewClientUnix(socketPath string) (*Client, error) {
 		}
 		return New(conn), nil
 	}
-	return nil, errors.New("Too many connections attempt")
+	return nil, errors.New("Too many connections attempt on socket : " + socketPath)
 }
 
 func (c *Client) Do(fun string, arg proto.Message, r proto.Message) error {
