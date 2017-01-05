@@ -12,17 +12,17 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type client struct {
+type Client struct {
 	wire io.ReadWriteCloser
 }
 
-func New(wire io.ReadWriteCloser) *client {
-	return &client{
+func New(wire io.ReadWriteCloser) *Client {
+	return &Client{
 		wire: wire,
 	}
 }
 
-func NewClientUnix(socketPath string) (*client, error) {
+func NewClientUnix(socketPath string) (*Client, error) {
 	for i := int64(0); i < 4; i++ {
 		conn, err := net.DialUnix("unix", nil, &net.UnixAddr{
 			Name: socketPath,
@@ -39,7 +39,7 @@ func NewClientUnix(socketPath string) (*client, error) {
 	return nil, errors.New("Too many connections attempt")
 }
 
-func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
+func (c *Client) Do(fun string, arg proto.Message, r proto.Message) error {
 	req := message.Request{
 		Name: fun,
 	}
@@ -64,6 +64,6 @@ func (c *client) Do(fun string, arg proto.Message, r proto.Message) error {
 	return resp.ReadOK(r)
 }
 
-func (c *client) Close() error {
+func (c *Client) Close() error {
 	return c.wire.Close()
 }
