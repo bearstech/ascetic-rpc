@@ -37,14 +37,7 @@ func (s *ServerUsers) MakeFolder() error {
 	}
 
 	if os.IsNotExist(err) {
-		err = os.Mkdir(s.socketHome, 0750)
-		if err != nil {
-			return err
-		}
-	}
-
-	if s.gid != -1 {
-		err = os.Chown(s.socketHome, 0, s.gid)
+		err = os.Mkdir(s.socketHome, 0755)
 		if err != nil {
 			return err
 		}
