@@ -32,6 +32,7 @@ type server struct {
 	ch        chan bool
 	waitGroup *sync.WaitGroup
 	running   bool
+	timeout   time.Duration
 }
 
 func NewServer(socket *net.UnixListener) *server {
@@ -41,6 +42,7 @@ func NewServer(socket *net.UnixListener) *server {
 		ch:        make(chan bool),
 		waitGroup: &sync.WaitGroup{},
 		running:   false,
+		timeout:   1e9,
 	}
 }
 
@@ -83,7 +85,7 @@ func (s *server) Serve() {
 		if s.socket == nil {
 			return
 		}
-		s.socket.SetDeadline(time.Now().Add(1e9))
+		s.socket.SetDeadline(time.Now().Add(s.timeout))
 		conn, err := s.socket.AcceptUnix()
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
