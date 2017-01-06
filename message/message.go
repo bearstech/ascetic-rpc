@@ -1,6 +1,10 @@
 package message
 
-import "github.com/golang/protobuf/proto"
+import (
+	"errors"
+
+	"github.com/golang/protobuf/proto"
+)
 
 // Error
 
@@ -59,7 +63,11 @@ func (r *Request) SetBody(body proto.Message) error {
 }
 
 func (r *Request) GetBody(body proto.Message) error {
-	return proto.Unmarshal(r.RawBody, body)
+	err := proto.Unmarshal(r.RawBody, body)
+	if err == nil {
+		return nil
+	}
+	return errors.New("Error while unmarshaling the body: " + err.Error())
 }
 
 func NewRequest(name string, body proto.Message) (*Request, error) {
