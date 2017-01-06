@@ -7,36 +7,7 @@ import (
 
 	"github.com/bearstech/ascetic-rpc/client"
 	"github.com/bearstech/ascetic-rpc/message"
-	"github.com/bearstech/ascetic-rpc/protocol"
-	"github.com/bearstech/ascetic-rpc/wire"
 )
-
-func TestPing(t *testing.T) {
-	w := wire.New()
-	s := NewServer(nil)
-	s.Register("ping", Ping)
-
-	req := message.Request{
-		Name: "ping",
-	}
-	err := protocol.Write(w.ClientToServer(), &req)
-	if err != nil {
-		t.Error(err)
-	}
-	err = s.Handle(w.ServerToClient())
-	if err != nil {
-		t.Error(err)
-	}
-
-	var resp message.Response
-	err = protocol.Read(w.ClientToServer(), &resp)
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.GetError() != nil {
-		t.Fatal()
-	}
-}
 
 func hello(req *message.Request) (*message.Response, error) {
 	var hello message.Hello
@@ -52,62 +23,6 @@ func hello(req *message.Request) (*message.Response, error) {
 		return nil, err
 	}
 	return res, nil
-}
-
-func TestHello(t *testing.T) {
-	w := wire.New()
-	s := NewServer(nil)
-	s.Register("hello", hello)
-
-	var err error
-	req := message.Request{
-		Name: "plop",
-	}
-	err = protocol.Write(w.ClientToServer(), &req)
-	err = s.Handle(w.ServerToClient())
-	if err != nil {
-		t.Error(err)
-	}
-	var resp message.Response
-	err = protocol.Read(w.ClientToServer(), &resp)
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.GetError() == nil {
-		t.Error(errors.New("It should be unknown"))
-	}
-	fmt.Println(w.Len())
-
-	req2, err := message.NewRequest("hello", &message.Hello{Name: "Bob"})
-	if err != nil {
-		t.Error(err)
-	}
-	fmt.Println("deuz: ", req2)
-	err = protocol.Write(w.ClientToServer(), req2)
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = s.Handle(w.ServerToClient())
-	if err != nil {
-		t.Error(err)
-	}
-	err = protocol.Read(w.ClientToServer(), &resp)
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.GetError() != nil {
-		t.Error(errors.New("It's an error: " + resp.GetError().Message))
-	}
-
-	var world message.World
-	err = resp.ReadOK(&world)
-	if err != nil {
-		t.Error(err)
-	}
-	if world.Message != "Hello Bob♥️" {
-		t.Error(errors.New("Bad message: " + world.Message))
-	}
 }
 
 func TestHelloServer(t *testing.T) {
