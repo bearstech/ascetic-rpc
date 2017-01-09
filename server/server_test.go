@@ -3,11 +3,13 @@ package server
 import (
 	"errors"
 	"fmt"
+	"io"
 	"testing"
+
+	"time"
 
 	"github.com/bearstech/ascetic-rpc/client"
 	"github.com/bearstech/ascetic-rpc/message"
-	"time"
 )
 
 func timedHello(req *message.Request) (*message.Response, error) {
@@ -21,8 +23,8 @@ func timedHello(req *message.Request) (*message.Response, error) {
 		Message: fmt.Sprintf("Hello %s♥️", hello.Name),
 	}
 
-	fmt.Println("Timed Hello func, waiting for 13 seconds... be patient")
-	time.Sleep(13 * time.Second)
+	fmt.Println("Timed Hello func, waiting for 4 seconds... be patient")
+	time.Sleep(4 * time.Second)
 
 	res, err := message.NewOKResponse(&world)
 	if err != nil {
@@ -95,14 +97,11 @@ func TestTimeoutServer(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer s.Stop()
 	// timeout set to 1 sec, timedHello() duration is 10 sec
 	// in this case, cut the wire.
-	s.Register("hello", timedHello).WithTimeout(1 * time.Second)
-	serverStopped := false
-	go func() {
-		s.Serve()
-		serverStopped = true
-	}()
+	s.Register("hello", timedHello).WithTimeout(100 * time.Millisecond)
+	go s.Serve()
 
 	c, err := client.NewClientUnix(socketPath)
 	if err != nil {
@@ -113,22 +112,12 @@ func TestTimeoutServer(t *testing.T) {
 	var world message.World
 
 	err = c.Do("hello", &hello, &world)
-	if err == nil {
-		t.Error(errors.New("Timeout expected"))
+	if err != io.EOF {
+		t.Errorf("Timeout expected, got %g", err)
 	}
 	err = c.Close()
 	if err != nil {
 		t.Error(err)
-	}
-	if world.Message != "Hello Alice♥️" {
-		t.Error(errors.New("Bad message: " + world.Message))
-	}
-	s.Stop()
-	if !serverStopped {
-		t.Error(errors.New("Bad stop"))
-	}
-	if s.IsRunning() {
-		t.Error(errors.New("Ghost running"))
 	}
 }
 

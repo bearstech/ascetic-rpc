@@ -163,7 +163,6 @@ func (s *server) Handle(wire ReadWriteCloseDeadliner) error {
 	}
 
 	wire.SetDeadline(time.Now().Add(h.timeout))
-
 	var resp *message.Response
 
 	func() {
@@ -180,7 +179,6 @@ func (s *server) Handle(wire ReadWriteCloseDeadliner) error {
 		}()
 		resp, err = h.function(&req)
 	}()
-	wire.SetDeadline(time.Now().Add(s.queryTimeout))
 	if err != nil {
 		return protocol.Write(wire, message.NewErrorResponse(message.Error_APPLICATION, err.Error()))
 	}
