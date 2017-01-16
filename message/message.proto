@@ -9,10 +9,19 @@ message Request {
 
 message Response {
     oneof Body {
-        Error Error   = 1;
-        bytes RawOK   = 2;
+        Error  Error  = 1;
+        bytes  RawOK  = 2;
+        bool   Stream = 4;
     }
     string Signature  = 3;
+}
+
+message Chunk {
+    oneof Body {
+        Error Error   = 1;
+        bytes RawOK   = 2;
+        bool  EOF     = 3;
+    }
 }
 
 message Error {
